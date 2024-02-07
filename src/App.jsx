@@ -1,67 +1,41 @@
-import { useState, useReducer } from 'react'
+import { useMemo, useCallback, useState } from 'react'
 
-function UserForm() {
-  const [state, dispatch] = useReducer(
-    (state, action) => ({
-      ...state,
-      ...action,
-    }),
-    {
-      first: "",
-      last: ""
-    });
 
+function SortedList({ list, sortFunc }) {
+  console.log("SortedList Render")
+  const sortedList = useMemo(() => {
+    console.log("Running sort");
+    return [...list].sort(sortFunc)
+  }, [list, sortFunc]);
   return (
     <div>
-      <input type="text" value={state.first} onChange={(e) => dispatch({ first: e.target.value })} />
-      <input type="text" value={state.last} onChange={(e) => dispatch({ last: e.target.value })} />
-      <div>
-        First: {state.first}
-      </div>
-      <div>
-        Last: {state.last}
-      </div>
-    </div>
-  )
-}
-function NameList() {
-
-  const [state, dispatch] = useReducer((state, action) => {
-    switch (action.type) {
-      case "SET_NAME":
-        return { ...state, name: action.payload };
-      case "ADD_NAME":
-        return {
-          ...state, names: [...state.names, state.name],
-          name: ""
-        };
-    }
-  }, {
-    names: [],
-    name: "",
-  })
-  return (
-    <div>
-      <div>
-        {state.names.map((name, index) => (
-          <div key={index}>{name}</div>
-        ))}
-      </div>
-      <input
-        type="text"
-        value={state.name}
-        onChange={e => dispatch({ type: "SET_NAME", payload: e.target.value })} />
-
-      <button onClick={() => dispatch({ type: "ADD_NAME" })}>Add Name</button>
+      {sortedList.join(", ")}
     </div>
   )
 }
 
 function App() {
+  const [numbers] = useState([10, 20, 30]);
+  const total = useMemo(() => numbers.reduce((acc, number) => acc + number, 0)
+    , [numbers]);
+  const [names] = useState(["John", "Paul", "George", "Ringo"]);
+  const sortedNames = useMemo(() => [...names].sort()
+    , [names]);
+
+  const [count1, setCount1] = useState(0);
+  const [count2, setCount2] = useState(0);
+  const countTotal = count1 + count2 // no need useMemo because its simple calculation
+
+  const sortFunc = useCallback((a, b) => a.localeCompare(b), []); // use useCallback when u pass func as a prop to a component
+
   return (
     <div className='App'>
-      <UserForm />
-      <NameList />
+      total: {total}
+      <div>Names: {names.join(", ")}</div>
+      <SortedList list={names} sortFunc={sortFunc} />
+      <button onClick={() => setCount1(count1 + 1)}>Count {count1}</button>
+      <button onClick={() => setCount2(count2 + 1)}>Count {count2}</button>
+      <div>total: {countTotal}</div>
     </div>
   )
 }
